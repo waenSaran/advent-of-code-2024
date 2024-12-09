@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -34,7 +35,7 @@ Safe report condition
 2. all increasing and its diff are at least 1 and at most 3
 */
 func isReportSafe(report []string) bool {
-	fmt.Print("report: ", report)
+	fmt.Print("\nreport: ", report)
 	isIncreasing := false
 	for i, v := range report {
 		if i == len(report)-1 {
@@ -64,9 +65,28 @@ func isReportSafe(report []string) bool {
 			fmt.Print(" ---> CONFLICT UNSAFE!!")
 			return false
 		}
-
 	}
 	return true
+}
+
+func deleteElement(slice []string, index int) []string {
+	return append(slice[:index], slice[index+1:]...)
+}
+
+// Return does this report can safe by remove just 1 level
+func canSolveUnSafeReport(report []string) bool {
+	// remove each level and prove it is safe
+	fmt.Print("\n-----try to solve this report----\n")
+	for i := 0; i < len(report); i++ {
+		tmp_report := slices.Clone(report)
+		tmp_report = deleteElement(tmp_report, i)
+		if isReportSafe(tmp_report) {
+			fmt.Print("\nDone solve report with SAFE!\n")
+			return true
+		}
+	}
+	fmt.Print("\nCannot solve report\n")
+	return false
 }
 
 // https://adventofcode.com/2024/day/2
@@ -75,9 +95,8 @@ func partOne(reports []string) {
 	for _, r := range reports {
 		report := strings.Split(r, " ")
 		isSafe := isReportSafe(report)
-		if isSafe {
+		if isSafe || (!isSafe && canSolveUnSafeReport(report)) {
 			count_safe_report += 1
-			fmt.Printf("\ncount safe report: %d", count_safe_report)
 		}
 		fmt.Print("\n")
 	}
