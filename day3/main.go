@@ -37,11 +37,40 @@ func getNumbersInMul(txt []byte) []int {
 	return numbers
 }
 
+// get mul(), do() and don't()
+func findAllFunc(txt string) [][]byte {
+	content := []byte(txt)
+	re := regexp.MustCompile(`mul\(\d+,\d+\)|do\(\)|don't\(\)`)
+	return re.FindAll(content, -1)
+}
+
 // https://adventofcode.com/2024/day/3
 func partOne(longtxt string) {
 	allMulString := findAllMul(longtxt)
 	sum := 0
 	for _, v := range allMulString {
+		numbers := getNumbersInMul(v)
+		sum += int(numbers[0]) * int(numbers[1])
+	}
+	fmt.Printf("sum: %d\n", sum)
+}
+
+// https://adventofcode.com/2024/day/3#part2
+func partTwo(longtxt string) {
+	allExecFunc := findAllFunc(longtxt)
+	sum := 0
+	do := true
+	for _, v := range allExecFunc {
+		if string(v) == "don't()" {
+			do = false
+		}
+		if string(v) == "do()" {
+			do = true
+			continue
+		}
+		if !do {
+			continue
+		}
 		numbers := getNumbersInMul(v)
 		sum += int(numbers[0]) * int(numbers[1])
 	}
@@ -57,6 +86,6 @@ func main() {
 	long_text := readFile("input.txt")
 
 	// start
-	partOne(long_text)
+	partTwo(long_text)
 
 }
