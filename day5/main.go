@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -88,11 +89,62 @@ func partOne(rules [][]int, updates [][]int) {
 	fmt.Printf("answer: %d\n", sum)
 }
 
+func topological_sort(rules [][]int, updates [][]int) [][]int {
+	rules_map := make(map[int][]int)
+	for _, rule := range rules {
+		rules_map[rule[0]] = append(rules_map[rule[0]], rule[1])
+	}
+	new_updates := [][]int{}
+	for _, update := range updates {
+		for i := 0; i < len(update); i++ {
+			for j := 0; j < len(update); j++ {
+				if _, ok := rules_map[update[i]]; !ok {
+					break
+				}
+				come_after_compared := i < j && slices.Contains(rules_map[update[i]], update[j])
+				come_before_compared := i > j && slices.Contains(rules_map[update[j]], update[i])
+				is_matched_rule := come_after_compared || come_before_compared
+				if update[i] == update[j] {
+					continue
+				}
+				if !is_matched_rule {
+					// reorder
+					update[i], update[j] = update[j], update[i]
+				}
+			}
+		}
+		new_updates = append(new_updates, update)
+	}
+	return new_updates
+}
+
+// https://adventofcode.com/2024/day/5#part2
+func partTwo(rules [][]int, updates [][]int) {
+	sum := 0
+	wrong_updates := [][]int{}
+	for _, update := range updates {
+		if !is_follow_rules(rules, update) {
+			// kept to new array
+			wrong_updates = append(wrong_updates, update)
+		}
+	}
+	// re-ordering update and sum mid nums
+	new_updates := topological_sort(rules, wrong_updates)
+
+	for _, update := range new_updates {
+		// get middle nums
+		mid_index := len(update) / 2
+		sum += update[mid_index]
+	}
+
+	fmt.Printf("answer: %d\n", sum)
+}
+
 func main() {
 
 	rules, updates := formatInput(readFile("input.txt"))
 
 	// start
-	partOne(rules, updates)
+	partTwo(rules, updates)
 
 }
